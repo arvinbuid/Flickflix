@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 /* eslint-disable no-unused-vars */
-import {useState} from "react";
+import {useEffect, useState} from "react";
 
 const tempMovieData = [
   {
@@ -51,8 +51,17 @@ const tempWatchedData = [
 
 const average = (arr) => arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
 
+const KEY = "96cadb79";
+
 export default function App() {
   const [movies, setMovies] = useState(tempMovieData);
+  const [watched, setWatched] = useState(tempWatchedData);
+
+  useEffect(() => {
+    fetch(`https://www.omdbapi.com/?apikey=${KEY}&s=harry potter`)
+      .then((res) => res.json())
+      .then((data) => setMovies(data.Search));
+  }, []);
 
   return (
     <>
@@ -62,9 +71,9 @@ export default function App() {
       </NavBar>
       <Main>
         <ListBox>
-          <MovieList movies={movies} /> 
+          <MovieList movies={movies} />
         </ListBox>
-        <WatchedBox />
+        <WatchedBox watched={watched} />
       </Main>
     </>
   );
@@ -113,9 +122,6 @@ function Main({children}) {
   return <main className='main'>{children}</main>;
 }
 
-{
-  /* Left Box */
-}
 function ListBox({children}) {
   const [isOpen1, setIsOpen1] = useState(true);
 
@@ -157,8 +163,7 @@ function Movie({movie}) {
 {
   /* Right Box */
 }
-function WatchedBox() {
-  const [watched, setWatched] = useState(tempWatchedData);
+function WatchedBox({watched}) {
   const [isOpen2, setIsOpen2] = useState(true);
 
   return (
