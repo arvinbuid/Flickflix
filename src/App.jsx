@@ -59,6 +59,15 @@ export default function App() {
   const [watched, setWatched] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [selectedId, setSelectedId] = useState("");
+
+  function handleSelectedMovie(id) {
+    setSelectedId((selectedId) => (selectedId === id ? "" : id));
+  }
+
+  function handleCloseMovie() {
+    setSelectedId("");
+  }
 
   useEffect(() => {
     async function fetchMovies() {
@@ -71,6 +80,7 @@ export default function App() {
         if (data.Response === "False") throw new Error("Movie not found."); // movie not found
 
         setMovies(data.Search);
+        console.log(data.Search);
       } catch (err) {
         // disconnected
         if (err.message === "Failed to fetch")
@@ -101,10 +111,21 @@ export default function App() {
       <Main>
         <ListBox>
           {isLoading && <Loader />}
-          {!error & !isLoading && <MovieList movies={movies} />}
+          {!error & !isLoading && (
+            <MovieList onSelectedMovie={handleSelectedMovie} movies={movies} />
+          )}
           {error && <ErrorMessage message={error} />}
         </ListBox>
-        <WatchedBox watched={watched} />
+        <WatchedBox>
+          {selectedId ? (
+            <MovieDetails selectedId={selectedId} onCloseMovie={handleCloseMovie} />
+          ) : (
+            <>
+              <WatchedSummary watched={watched} />
+              <WatchedMovieList watched={watched} />
+            </>
+          )}
+        </WatchedBox>
       </Main>
     </>
   );
@@ -177,19 +198,19 @@ function ListBox({children}) {
   );
 }
 
-function MovieList({movies}) {
+function MovieList({movies, onSelectedMovie}) {
   return (
-    <ul className='list'>
+    <ul className='list list-movies'>
       {movies?.map((movie) => (
-        <Movie movie={movie} key={movie.imdbID} />
+        <Movie movie={movie} key={movie.imdbID} onSelectedMovie={onSelectedMovie} />
       ))}
     </ul>
   );
 }
 
-function Movie({movie}) {
+function Movie({movie, onSelectedMovie}) {
   return (
-    <li>
+    <li onClick={() => onSelectedMovie(movie.imdbID)}>
       <img src={movie.Poster} alt={`${movie.Title} poster`} />
       <h3>{movie.Title}</h3>
       <div>
@@ -202,10 +223,21 @@ function Movie({movie}) {
   );
 }
 
+function MovieDetails({selectedId, onCloseMovie}) {
+  return (
+    <div>
+      <button className='btn-back' onClick={onCloseMovie}>
+        &larr;
+      </button>
+      <p>{selectedId}</p>
+    </div>
+  );
+}
+
 {
   /* Right Box */
 }
-function WatchedBox({watched}) {
+function WatchedBox({children}) {
   const [isOpen2, setIsOpen2] = useState(true);
 
   return (
@@ -213,12 +245,7 @@ function WatchedBox({watched}) {
       <button className='btn-toggle' onClick={() => setIsOpen2((open) => !open)}>
         {isOpen2 ? "–" : "+"}
       </button>
-      {isOpen2 && (
-        <>
-          <WatchedSummary watched={watched} />
-          <WatchedMovieList watched={watched} />
-        </>
-      )}
+      {isOpen2 && children}
     </div>
   );
 }
