@@ -113,6 +113,7 @@ export default function App() {
       return;
     }
 
+    handleCloseMovie();
     fetchMovies();
 
     return function () {
@@ -282,16 +283,29 @@ function MovieDetails({selectedId, onCloseMovie, onAddWatched, watched, onDelete
     onCloseMovie();
   }
 
+  // Listen to escape keypress
   useEffect(() => {
+    function callback(e) {
+      if (e.code === "Escape") {
+        onCloseMovie();
+      }
+    }
+
+    document.addEventListener("keydown", callback);
+
+    () => document.removeEventListener("keydown", callback); // clean up
+  }, [onCloseMovie]);
+
+  useEffect(() => {
+    // fetch movie id
     async function getMovieDetails() {
       try {
         setIsLoading(true);
         const res = await fetch(`https://www.omdbapi.com/?apikey=${KEY}&i=${selectedId}`);
         const data = await res.json();
         setMovie(data);
-        // console.log(data);
       } catch (err) {
-        console.error(err.message);
+        console.log(err.message);
       } finally {
         setIsLoading(false);
       }
