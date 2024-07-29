@@ -1,6 +1,7 @@
 /* eslint-disable react/prop-types */
 /* eslint-disable no-unused-vars */
 import {useEffect, useState} from "react";
+import StarRating from "./StarRating";
 
 const tempMovieData = [
   {
@@ -69,6 +70,8 @@ export default function App() {
     setSelectedId("");
   }
 
+  
+
   useEffect(() => {
     async function fetchMovies() {
       try {
@@ -80,7 +83,7 @@ export default function App() {
         if (data.Response === "False") throw new Error("Movie not found."); // movie not found
 
         setMovies(data.Search);
-        console.log(data.Search);
+        // console.log(data.Search);
       } catch (err) {
         // disconnected
         if (err.message === "Failed to fetch")
@@ -224,12 +227,77 @@ function Movie({movie, onSelectedMovie}) {
 }
 
 function MovieDetails({selectedId, onCloseMovie}) {
+  const [movie, setMovie] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const {
+    Title: title,
+    Poster: poster,
+    Released: releasedDate,
+    Genre: genre,
+    Runtime: runtime,
+    imdbRating: rating,
+    Plot: plot,
+    Actors: actors,
+    Director: director,
+  } = movie;
+
+  useEffect(() => {
+    async function getMovieDetails() {
+      try {
+        setIsLoading(true);
+        const res = await fetch(`https://www.omdbapi.com/?apikey=${KEY}&i=${selectedId}`);
+        const data = await res.json();
+        setMovie(data);
+        // console.log(data);
+      } catch (err) {
+        console.error(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    getMovieDetails();
+  }, [selectedId]);
+
   return (
-    <div>
-      <button className='btn-back' onClick={onCloseMovie}>
-        &larr;
-      </button>
-      <p>{selectedId}</p>
+    <div className='details'>
+      {isLoading ? (
+        <p className='loader'>Loading...</p>
+      ) : (
+        <>
+          <header>
+            <button className='btn-back' onClick={onCloseMovie}>
+              &larr;
+            </button>
+
+            <img src={poster} alt={`Poster of ${title}`} />
+            <div className='details-overview'>
+              <h2>{title}</h2>
+              <p>
+                {releasedDate} &bull; {runtime}
+              </p>
+              <p>{genre}</p>
+              <p>
+                <span>⭐</span>
+                {rating} IMDb rating
+              </p>
+            </div>
+          </header>
+
+          <section>
+            <div className='rating'>
+              <StarRating maxRating={10} size={26} />
+              <button className='btn-add'>Add to list</button>
+            </div>
+            <p>
+              <em>{plot}</em>
+            </p>
+            <p>Starring {actors}</p>
+            <p>Directed by {director}</p>
+          </section>
+        </>
+      )}
     </div>
   );
 }
