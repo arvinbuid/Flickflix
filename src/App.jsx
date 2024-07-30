@@ -148,6 +148,26 @@ function Logo() {
 }
 
 function Search({query, setQuery}) {
+  const inputRef = useRef(null);
+
+  useEffect(
+    function () {
+      function callback(e) {
+        if (document.activeElement === inputRef.current) return;
+        console.log();
+
+        if (e.code === "Enter") {
+          inputRef.current.focus();
+          setQuery("");
+        }
+      }
+
+      document.addEventListener("keydown", callback);
+      return () => document.removeEventListener("keydown", callback); // cleanup
+    },
+    [setQuery]
+  );
+
   return (
     <input
       className='search'
@@ -155,6 +175,7 @@ function Search({query, setQuery}) {
       placeholder='Search movies...'
       value={query}
       onChange={(e) => setQuery(e.target.value)}
+      ref={inputRef}
     />
   );
 }
