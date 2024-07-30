@@ -15,24 +15,8 @@ export default function App() {
   const [error, setError] = useState("");
   const [selectedId, setSelectedId] = useState("");
 
-  function handleSelectedMovie(id) {
-    setSelectedId((selectedId) => (selectedId === id ? "" : id));
-  }
-
-  function handleCloseMovie() {
-    setSelectedId("");
-  }
-
-  function handleAddWatched(movie) {
-    setWatched((watched) => [...watched, movie]);
-  }
-
-  function handleDeleteWatchedMovie(id) {
-    setWatched((watched) => watched.filter((movie) => movie.imdbID !== id));
-    setSelectedId("");
-  }
-
   useEffect(() => {
+    // fetch to search movie
     const controller = new AbortController();
     async function fetchMovies() {
       try {
@@ -73,6 +57,23 @@ export default function App() {
       controller.abort();
     };
   }, [query]);
+
+  function handleSelectedMovie(id) {
+    setSelectedId((selectedId) => (selectedId === id ? "" : id));
+  }
+
+  function handleCloseMovie() {
+    setSelectedId("");
+  }
+
+  function handleAddWatched(movie) {
+    setWatched((watched) => [...watched, movie]);
+  }
+
+  function handleDeleteWatchedMovie(id) {
+    setWatched((watched) => watched.filter((movie) => movie.imdbID !== id));
+    setSelectedId("");
+  }
 
   return (
     <>
