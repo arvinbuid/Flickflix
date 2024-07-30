@@ -4,6 +4,7 @@ import {useEffect, useRef, useState} from "react";
 import StarRating from "./StarRating";
 import {useMovies} from "./hooks/useMovies";
 import {useLocalStorageState} from "./hooks/useLocalStorageState";
+import {useKey} from "./hooks/useKey";
 
 const KEY = "96cadb79";
 
@@ -103,23 +104,12 @@ function Logo() {
 function Search({query, setQuery}) {
   const inputRef = useRef(null);
 
-  useEffect(
-    function () {
-      function callback(e) {
-        if (document.activeElement === inputRef.current) return;
-        console.log();
-
-        if (e.code === "Enter") {
-          inputRef.current.focus();
-          setQuery("");
-        }
-      }
-
-      document.addEventListener("keydown", callback);
-      return () => document.removeEventListener("keydown", callback); // cleanup
-    },
-    [setQuery]
-  );
+  // useKey custom hook
+  useKey("Enter", function () {
+    if (document.activeElement === inputRef.current) return;
+    inputRef.current.focus();
+    setQuery("");
+  });
 
   return (
     <input
@@ -229,18 +219,8 @@ function MovieDetails({selectedId, onCloseMovie, onAddWatched, watched, onDelete
     onCloseMovie();
   }
 
-  // Listen to escape keypress
-  useEffect(() => {
-    function callback(e) {
-      if (e.code === "Escape") {
-        onCloseMovie();
-      }
-    }
-
-    document.addEventListener("keydown", callback);
-
-    () => document.removeEventListener("keydown", callback); // clean up
-  }, [onCloseMovie]);
+  // useKey custom hook
+  useKey("Escape", onCloseMovie);
 
   useEffect(() => {
     // fetch movie id
